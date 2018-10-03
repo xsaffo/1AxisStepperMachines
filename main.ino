@@ -25,7 +25,7 @@ const long velocita_millisec = 20; //Si tratta di millisecondi tra un impulso e 
 const long velocita_microsec = 20000; //Si tratta di microsecondi tra un impulso e l'altro sul pin STEP 
 const long velocita = 600; //Si tratta di microsecondi tra un impulso e l'altro sul pin STEP 
 
-const long tPasso = 500; //Microsecondi
+const long tPasso = 1000; //Microsecondi
 
 long tDelay = 10; //Millisecondi
 //const long tDelay = 1; //Millisecondi
@@ -53,29 +53,41 @@ void setup() {
   pinMode(X_DIR, OUTPUT);
   pinMode(Y_DIR, OUTPUT);
   pinMode(EN, OUTPUT);
-
+  
   //Pulsantiera Controller
   pinMode(BTN_STOP, INPUT);
   pinMode(BTN_START, INPUT);
   pinMode(SW_DIR, INPUT);
-
-   //Per Abilitare LOW
+  
+  //Per Abilitare LOW
   digitalWrite(EN, LOW);
- //Inizializzo la porta seriale per comunicazione
-   Serial.begin(9600);
-
-      s_dir = val_sw_dir = digitalRead(SW_DIR);
-   s_start = val_btn_start = digitalRead(BTN_START);
-   s_stop = val_btn_stop = digitalRead(BTN_STOP);
-
+  
+  //Inizializzo la porta seriale per comunicazione
+  Serial.begin(9600);
+  
+  s_dir = val_sw_dir = digitalRead(SW_DIR);
+  s_start = val_btn_start = digitalRead(BTN_START);
+  s_stop = val_btn_stop = digitalRead(BTN_STOP);
+  
   s_velocita = analogRead(AN_VELOCITA);
-val_an_velocita =  s_velocita;
-    val_btn_movimento = false;
-    direzione = !digitalRead(SW_DIR);
-
+  val_an_velocita =  s_velocita;
+  val_btn_movimento = false;
+  direzione = !digitalRead(SW_DIR);
+  
   //definiamo la direzione del motore
   digitalWrite(X_DIR, direzione);
   digitalWrite(Y_DIR, !direzione);
+
+
+  Serial.print("VELOCITA = ");
+  Serial.println(val_an_velocita);  
+  
+  tDelay = map(val_an_velocita, 0, 1023, 0, 30);
+  Serial.print("VELOCITA_MAP = ");
+  Serial.println(tDelay);
+  
+  Serial.print("DIR = ");
+  Serial.println(val_sw_dir); 
 }
 
 
@@ -126,6 +138,9 @@ void loop() {
       Serial.print("Start");
       Serial.println(state_Start);
       val_btn_movimento = true;
+      
+  digitalWrite(EN, LOW);
+
     }
     time_Start = millis();
  }
@@ -139,6 +154,9 @@ void loop() {
       Serial.print("Stop");
       Serial.println(state_Stop);
       val_btn_movimento = false;
+      
+  digitalWrite(EN, HIGH);
+
     }
     time_Stop = millis();
  }
@@ -161,16 +179,16 @@ if (s_dir != val_sw_dir)
 
 int tmp_vl = s_velocita - val_an_velocita;
 
-if(tmp_vl < 0)
-  tmp_vl = tmp_vl * -1;
+//if(tmp_vl < 0)
+//  tmp_vl = tmp_vl * -1;
 
-if (tmp_vl > 10) {
+if ((tmp_vl < -20) || (tmp_vl > 20)) {
  
    val_an_velocita = s_velocita;
     Serial.print("VELOCITA = ");
     Serial.println(val_an_velocita);  
 
-    tDelay = map(val_an_velocita, 0, 1023, 1, 12);
+    tDelay = map(val_an_velocita, 0, 1023, 0, 15);
     Serial.print("VELOCITA_MAP = ");
     Serial.println(tDelay); 
 }
